@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #1a1a1a;
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: 
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: stars 4s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes stars {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-200px); }
+        }
+
+        #game-container {
+            position: relative;
+            margin: 20px;
+        }
+
+        canvas {
+            border: 4px solid #333;
+            border-radius: 10px;
+            background: #2c3e50;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
+        }
+
+        #score-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #e74c3c;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 2px solid #e74c3c;
+            z-index: 100;
+        }
+
+        #start-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            border: 3px solid #e74c3c;
+            box-shadow: 0 0 30px rgba(231, 76, 60, 0.5);
+            z-index: 100;
+            min-width: 320px;
+        }
+
+        #start-screen h1 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #e74c3c;
+            text-shadow: 3px 3px 0px #000;
+            letter-spacing: 2px;
+        }
+
+        #start-button {
+            padding: 15px 30px;
+            font-size: 16px;
+            background: #c0392b;
+            border: none;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Press Start 2P', cursive;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 2px solid #e74c3c;
+            box-shadow: 0 4px 0 #7f1c13;
+            position: relative;
+            top: 0;
+        }
+
+        #start-button:hover {
+            background: #e74c3c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #7f1c13;
+        }
+
+        #start-button:active {
+            top: 4px;
+            box-shadow: 0 0 0 #7f1c13;
+        }
+
+        .controls {
+            margin-top: 30px;
+            color: #fff;
+            font-size: 12px;
+            line-height: 1.6;
+            opacity: 0.7;
+        }
+
+        .high-score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #e74c3c;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 2px solid #e74c3c;
+        }
+
+        .game-title {
+            position: relative;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .bird-icon {
+            font-size: 40px;
+            margin: 20px 0;
+            display: inline-block;
+            animation: flap 0.5s ease-in-out infinite;
+            color: #e74c3c;
+        }
+
+        @keyframes flap {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            #start-screen {
+                width: 90%;
+                padding: 20px;
+            }
+
+            #start-screen h1 {
+                font-size: 20px;
+            }
+
+            .controls {
+                font-size: 10px;
+            }
+
+            #score-display {
+                font-size: 16px;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-text {
+            color: #e74c3c;
+            font-size: 24px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="loading">
+        <div class="loading-text">LOADING...</div>
+    </div>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="score-display">Score: 0</div>
+        <div class="high-score">Best: 0</div>
+        <div id="start-screen">
+            <div class="game-title">
+                <h1>FLAPPY BIRD</h1>
+                <div class="bird-icon">🦅</div>
+            </div>
+            <button id="start-button">Play Game</button>
+            <div class="controls">
+                <p>SPACE / CLICK to FLAP</p>
+                <p>Avoid the pipes</p>
+                <p>Don't hit the ground</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Hide loading screen after everything is loaded
+        window.addEventListener('load', () => {
+            document.querySelector('.loading').classList.add('hidden');
+        });
+
+        // Update high score
+        let highScore = localStorage.getItem('highScore') || 0;
+        document.querySelector('.high-score').textContent = `Best: ${highScore}`;
+    </script>
+    <script src="game.js"></script>
+</body>
+</html> 
+
+
+
+
